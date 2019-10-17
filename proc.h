@@ -49,7 +49,7 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
-  uint pticks                  // Quantidade de ticks que o processo ja rodou
+  uint pticks;                 // Quantidade de ticks que o processo ja rodou
 };
 
 // Process memory is laid out contiguously, low addresses first:

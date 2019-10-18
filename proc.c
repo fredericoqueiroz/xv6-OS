@@ -88,6 +88,13 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+  
+  p->createTime = ticks;
+  p->readyTime = 0;
+  p->runTime = 0;
+  p->sleepTime = 0;
+  p->priority = 2;
+
 
   release(&ptable.lock);
 
@@ -342,7 +349,7 @@ scheduler(void)
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
-
+      cprintf("Processo %s com pid %d executando: createTime %d | tickcounter %d\n", p->name, p->pid, p->createTime, p->tickcounter);
       swtch(&(c->scheduler), p->context);
       switchkvm();
 

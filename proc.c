@@ -348,8 +348,7 @@ scheduler(void)
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
-      //p->rutime = ticks;
-      cprintf("| Processo %s com pid %d executando | createTime %d | readyTime %d | runTime %d | sleepTime %d | tickcounter %d |\n",
+      cprintf("| Processo %s com pid %d executando | createTime %d | readyTime %d | runTime %d | sleepTime %d | ruticks %d |\n",
        p->name, p->pid, p->ctime, p->retime, p->rutime, p->stime, p->ruticks);
       swtch(&(c->scheduler), p->context);
       switchkvm();

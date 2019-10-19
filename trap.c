@@ -33,25 +33,6 @@ idtinit(void)
   lidt(idt, sizeof(idt));
 }
 
-/* 
-void
-incrementa_tickcounter()
-{
-  struct proc *p;
-  //myproc()->tickcounter++;
-  
-  acquire(&ptable.lock);
-  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
-  {
-    if(p->state == RUNNING)
-    {
-      p->tickcounter++;
-    }
-  }
-  release(&ptable.lock);
-
-}
- */
 //PAGEBREAK: 41
 void
 trap(struct trapframe *tf)
@@ -71,6 +52,7 @@ trap(struct trapframe *tf)
     if(cpuid() == 0){
       acquire(&tickslock);
       ticks++;
+      proc_tick(); // incrementa o contador de ticks do estado em que o processo se encontra
       wakeup(&ticks);
       release(&tickslock);
     }
@@ -123,8 +105,10 @@ trap(struct trapframe *tf)
   // Force process to give up CPU on clock tick.
   // If interrupts were on while locks held, would need to check nlock.
   if(myproc() && myproc()->state == RUNNING &&
-     tf->trapno == T_IRQ0+IRQ_TIMER && (ticks - myproc()->runTime) >= INTERV)
-    yield();
+     tf->trapno == T_IRQ0+IRQ_TIMER && (myproc()->ruticks % INTERV) == 0){
+      cprintf("Processo %d sendo preemptado | ruticks %d | globalticks %d |\n", myproc()->pid, myproc()->ruticks, ticks); 
+      yield();
+    }
 
   // Check if the process has been killed since we yielded
   if(myproc() && myproc()->killed && (tf->cs&3) == DPL_USER)

@@ -90,11 +90,11 @@ found:
   p->pid = nextpid++;
   p->priority = 2;
 
-  p->createTime = ticks;
-  p->readyTime = 0;
-  p->runTime = 0;
-  p->sleepTime = 0;
-
+  p->ctime = ticks;
+  p->stime = 0;
+  p->retime = 0;
+  p->rutime = 0;
+  p->ruticks = 0;
   release(&ptable.lock);
 
   // Allocate kernel stack.
@@ -348,8 +348,9 @@ scheduler(void)
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
-      p->runTime = ticks;
-      cprintf("- Scheduler: Processo %s com pid %d executando: createTime %d , runTime %d | ticks %d\n", p->name, p->pid, p->createTime, p->runTime, ticks);
+      //p->rutime = ticks;
+      cprintf("| Processo %s com pid %d executando | createTime %d | readyTime %d | runTime %d | sleepTime %d | tickcounter %d |\n",
+       p->name, p->pid, p->ctime, p->retime, p->rutime, p->stime, p->ruticks);
       swtch(&(c->scheduler), p->context);
       switchkvm();
 
@@ -394,7 +395,7 @@ yield(void)
 {
   acquire(&ptable.lock);  //DOC: yieldlock
   myproc()->state = RUNNABLE;
-  myproc()->readyTime = ticks;
+  myproc()->ruticks = 0;
   sched();
   release(&ptable.lock);
 }
@@ -468,8 +469,10 @@ wakeup1(void *chan)
   struct proc *p;
 
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
-    if(p->state == SLEEPING && p->chan == chan)
+    if(p->state == SLEEPING && p->chan == chan){
       p->state = RUNNABLE;
+      p->ruticks = 0;
+    }
 }
 
 // Wake up all processes sleeping on chan.
@@ -539,4 +542,27 @@ procdump(void)
     }
     cprintf("\n");
   }
+}
+
+void
+proc_tick(void)
+{
+  struct proc *p;
+
+  acquire(&ptable.lock);
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+  {
+    /*Assuma que um processo está no estado SLEEPING
+    somente quando estiver esperando uma tarefa de I/O.*/
+    if(p->state == SLEEPING) //falta tratar o SLEEPING corretamente
+      p->stime++;
+    if(p->state == RUNNABLE)
+      p->retime++;
+    if(p->state == RUNNING){
+      p->ruticks++;
+      p->rutime++;
+      cprintf("Processo %d executando pelo %d tick | globalticks %d |\n", p->pid, p->ruticks, ticks);
+    }
+  }
+  release(&ptable.lock);
 }

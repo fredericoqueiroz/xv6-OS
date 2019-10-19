@@ -8,6 +8,7 @@
 #include "traps.h"
 #include "spinlock.h"
 
+
 // Interrupt descriptor table (shared by all CPUs).
 struct gatedesc idt[256];
 extern uint vectors[];  // in vectors.S: array of 256 entry pointers
@@ -32,6 +33,25 @@ idtinit(void)
   lidt(idt, sizeof(idt));
 }
 
+/* 
+void
+incrementa_tickcounter()
+{
+  struct proc *p;
+  //myproc()->tickcounter++;
+  
+  acquire(&ptable.lock);
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+  {
+    if(p->state == RUNNING)
+    {
+      p->tickcounter++;
+    }
+  }
+  release(&ptable.lock);
+
+}
+ */
 //PAGEBREAK: 41
 void
 trap(struct trapframe *tf)
@@ -103,7 +123,7 @@ trap(struct trapframe *tf)
   // Force process to give up CPU on clock tick.
   // If interrupts were on while locks held, would need to check nlock.
   if(myproc() && myproc()->state == RUNNING &&
-     tf->trapno == T_IRQ0+IRQ_TIMER)
+     tf->trapno == T_IRQ0+IRQ_TIMER && (ticks - myproc()->runTime) >= INTERV)
     yield();
 
   // Check if the process has been killed since we yielded

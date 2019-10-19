@@ -88,13 +88,12 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
-  
+  p->priority = 2;
+
   p->createTime = ticks;
   p->readyTime = 0;
   p->runTime = 0;
   p->sleepTime = 0;
-  p->priority = 2;
-
 
   release(&ptable.lock);
 
@@ -349,7 +348,8 @@ scheduler(void)
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
-      cprintf("Processo %s com pid %d executando: createTime %d | tickcounter %d\n", p->name, p->pid, p->createTime, p->tickcounter);
+      p->runTime = ticks;
+      cprintf("- Scheduler: Processo %s com pid %d executando: createTime %d , runTime %d | ticks %d\n", p->name, p->pid, p->createTime, p->runTime, ticks);
       swtch(&(c->scheduler), p->context);
       switchkvm();
 
@@ -394,6 +394,7 @@ yield(void)
 {
   acquire(&ptable.lock);  //DOC: yieldlock
   myproc()->state = RUNNABLE;
+  myproc()->readyTime = ticks;
   sched();
   release(&ptable.lock);
 }

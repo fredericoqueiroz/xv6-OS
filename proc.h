@@ -57,7 +57,6 @@ struct proc {
   int  stime;                  // process sleeping time
   int  retime;                 // process ready (RUNNABLE) time
   int  rutime;                 // process running time
-
   int  ruticks;                // ticks que o processo ja executou
 };
 

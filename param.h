@@ -12,3 +12,5 @@
 #define NBUF         (MAXOPBLOCKS*3)  // size of disk block cache
 #define FSSIZE       1000  // size of file system in blocks
 #define INTERV       5 // numero de ticks de clock entre preempcao
+#define T1TO2        5 //Promove um processo da fila 1 para fila 2 se tempo de espera maior que T1TO2 ticks
+#define T2TO3        5 //Promove um processo da fila 2 para fila 3 se tempo de espera maior que T2TO3 ticks

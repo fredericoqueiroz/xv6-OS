@@ -576,6 +576,14 @@ procdump(void)
 }
 
 void
+proc_aging(struct proc *p){
+  if(p->priority == 1)
+    p->priority == 2;
+  if(p->priority == 2)
+    p->priority = 3;
+}
+
+void
 proc_tick(void)
 {
   struct proc *p;
@@ -590,8 +598,12 @@ proc_tick(void)
     somente quando estiver esperando uma tarefa de I/O.*/
     if(p->state == SLEEPING) //falta tratar o SLEEPING corretamente CHAN
       p->stime++;
-    if(p->state == RUNNABLE)
+    if(p->state == RUNNABLE){
       p->retime++;
+      if((p->retime % T1TO2 == 0) || (p->retime % T2TO3 == 0)){
+        proc_aging(&p);
+      }
+    }
     if(p->state == RUNNING){
       p->ruticks++;
       p->rutime++;

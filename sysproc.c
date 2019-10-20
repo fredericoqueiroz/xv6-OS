@@ -97,3 +97,10 @@ sys_set_prio(void)
   argint(0, &prio);
   return set_prio(prio);
 }
+
+int
+sys_wait2(void)
+{
+  int retime, rutime, stime;
+  return wait2(&retime, &rutime, &stime);
+}

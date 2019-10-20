@@ -221,6 +221,7 @@ fork(void)
   acquire(&ptable.lock);
 
   np->state = RUNNABLE;
+  //np->priority = 2;
 
   release(&ptable.lock);
 
@@ -331,17 +332,46 @@ scheduler(void)
   struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
-  
+  int pflag = 0;
+
   for(;;){
     // Enable interrupts on this processor.
     sti();
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE)
-        continue;
 
+    pflag = 0;
+
+    // Verifica se existe algum processo com prioridade ALTA (3)
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if(p->state == RUNNABLE && p->priority == 3){
+        pflag = 1;
+        break;
+      }
+    }
+
+    // Verifica se existe algum processo com prioridade INTERMEDIARIA (2)
+    if(!pflag){
+      for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+        if(p->state == RUNNABLE && p->priority == 2){
+          pflag = 1;
+          break;
+        }
+      }
+    }
+
+    // Verifica se existe algum processo com prioridade BAIXA (1)
+    if(!pflag){
+      for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+        if(p->state == RUNNABLE && p->priority == 1){
+          pflag = 1;
+          break;
+        }
+      }
+    }
+
+    if(pflag){
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
@@ -351,8 +381,7 @@ scheduler(void)
 
       cprintf("- Scheduler: Processo %s com pid %d iniciando execucao           | createTime %d | runTime %d | globalticks %d|\n",
       p->name, p->pid, p->ctime, p->rutime, ticks);
-      /* cprintf("| Processo %s com pid %d executando | createTime %d | readyTime %d | runTime %d | sleepTime %d | ruticks %d |\n",
-       p->name, p->pid, p->ctime, p->retime, p->rutime, p->stime, p->ruticks); */
+      
       swtch(&(c->scheduler), p->context);
       switchkvm();
 
@@ -360,8 +389,8 @@ scheduler(void)
       // It should have changed its p->state before coming back.
       c->proc = 0;
     }
-    release(&ptable.lock);
 
+    release(&ptable.lock);
   }
 }
 
@@ -551,6 +580,9 @@ proc_tick(void)
 {
   struct proc *p;
 
+  // Enable interrupts on this processor.
+  //sti();
+
   acquire(&ptable.lock);
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
   {
@@ -568,4 +600,23 @@ proc_tick(void)
     }
   }
   release(&ptable.lock);
+}
+
+int
+set_prio(int priority){
+
+  //verifica se a priority eh valida
+  if(priority < 1 || priority > 3)
+    return -1;
+
+  struct proc *p = myproc();
+
+  // Enable interrupts on this processor.
+  //sti();
+
+  acquire(&ptable.lock);
+  p->priority = priority;
+  release(&ptable.lock);
+
+  return 0;
 }

@@ -51,7 +51,6 @@ struct proc {
   char name[16];               // Process name (debugging)
   
   int priority;                // process priority
-
   // timestamps
   uint ctime;                  // process creation tick
   int  stime;                  // process sleeping time

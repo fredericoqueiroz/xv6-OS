@@ -637,14 +637,11 @@ proc_tick(void)
 int
 set_prio(int priority){
 
-  //verifica se a priority eh valida
-  if(priority < 1 || priority > 3)
-    return -1;
-
   struct proc *p = myproc();
 
-  // Enable interrupts on this processor.
-  //sti();
+  //verifica se a priority eh valida
+  if(priority < 1 || priority > 3 || p->killed)
+    return -1;
 
   acquire(&ptable.lock);
   p->priority = priority;

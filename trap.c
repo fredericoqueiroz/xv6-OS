@@ -106,7 +106,9 @@ trap(struct trapframe *tf)
   // If interrupts were on while locks held, would need to check nlock.
   if(myproc() && myproc()->state == RUNNING &&
      tf->trapno == T_IRQ0+IRQ_TIMER && (myproc()->ruticks % INTERV) == 0){
-      cprintf("Processo %d sendo preemptado | ruticks %d | globalticks %d |\n", myproc()->pid, myproc()->ruticks, ticks); 
+      cprintf("- Trap     : Processo %s com pid %d sendo preemptado apos %d ticks| createTime %d | runTime %d | globalticks %d|\n",
+      myproc()->name, myproc()->pid, myproc()->ruticks, myproc()->ctime, myproc()->rutime, ticks);
+      //cprintf("Processo %d sendo preemptado | ruticks %d | globalticks %d |\n", myproc()->pid, myproc()->ruticks, ticks); 
       yield();
     }
 

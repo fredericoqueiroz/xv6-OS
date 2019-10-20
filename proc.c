@@ -348,8 +348,11 @@ scheduler(void)
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
-      cprintf("| Processo %s com pid %d executando | createTime %d | readyTime %d | runTime %d | sleepTime %d | ruticks %d |\n",
-       p->name, p->pid, p->ctime, p->retime, p->rutime, p->stime, p->ruticks);
+
+      cprintf("- Scheduler: Processo %s com pid %d iniciando execucao           | createTime %d | runTime %d | globalticks %d|\n",
+      p->name, p->pid, p->ctime, p->rutime, ticks);
+      /* cprintf("| Processo %s com pid %d executando | createTime %d | readyTime %d | runTime %d | sleepTime %d | ruticks %d |\n",
+       p->name, p->pid, p->ctime, p->retime, p->rutime, p->stime, p->ruticks); */
       swtch(&(c->scheduler), p->context);
       switchkvm();
 
@@ -553,14 +556,15 @@ proc_tick(void)
   {
     /*Assuma que um processo está no estado SLEEPING
     somente quando estiver esperando uma tarefa de I/O.*/
-    if(p->state == SLEEPING) //falta tratar o SLEEPING corretamente
+    if(p->state == SLEEPING) //falta tratar o SLEEPING corretamente CHAN
       p->stime++;
     if(p->state == RUNNABLE)
       p->retime++;
     if(p->state == RUNNING){
       p->ruticks++;
       p->rutime++;
-      cprintf("Processo %d executando pelo %d tick | globalticks %d |\n", p->pid, p->ruticks, ticks);
+      cprintf("- ProcTick : Processo %s com pid %d executando pelo %d tick       | createTime %d | runTime %d | globalticks %d|\n",
+      p->name, p->pid, p->ruticks, p->ctime, p->rutime, ticks);
     }
   }
   release(&ptable.lock);

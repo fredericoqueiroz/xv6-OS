@@ -123,6 +123,7 @@ void            yield(void);
 void            proc_tick(void);
 int             set_prio(int);
 int             wait2(int*, int*, int*);
+int             sys_yield(void);
 
 // swtch.S
 void            swtch(struct context**, struct context*);

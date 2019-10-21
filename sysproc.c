@@ -97,10 +97,29 @@ sys_set_prio(void)
   argint(0, &prio);
   return set_prio(prio);
 }
-
+/* 
 int
 sys_wait2(void)
 {
   int retime, rutime, stime;
   return wait2(&retime, &rutime, &stime);
+} */
+
+int
+sys_wait2(void)
+{
+  int *retime;
+  int *rutime;
+  int *stime;
+
+  if (argptr(0, (char**)&retime, sizeof(int)) < 0)
+    return -1;
+
+  if (argptr(1, (char**)&rutime, sizeof(int)) < 0)
+    return -1;
+
+  if (argptr(1, (char**)&stime, sizeof(int)) < 0)
+    return -1;
+
+  return wait2(retime, rutime, stime);
 }
